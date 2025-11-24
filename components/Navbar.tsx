@@ -3,15 +3,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, LogIn, UserPlus, Settings, LogOut, Menu, X } from "lucide-react";
+import { User, LogIn, UserPlus, Settings, LogOut, Menu, X, ChevronDown } from "lucide-react";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isMobileAccountOpen, setIsMobileAccountOpen] = useState(false);
+  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
 
   const accountRefDesktop = useRef<HTMLDivElement>(null);
   const accountRefMobile = useRef<HTMLDivElement>(null);
+  const resourcesRefDesktop = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   // Close dropdowns when clicking outside
@@ -29,6 +31,13 @@ const Navbar: React.FC = () => {
         !accountRefMobile.current.contains(event.target as Node)
       ) {
         setIsMobileAccountOpen(false);
+      }
+
+      if (
+        resourcesRefDesktop.current &&
+        !resourcesRefDesktop.current.contains(event.target as Node)
+      ) {
+        setIsResourcesOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -55,6 +64,14 @@ const Navbar: React.FC = () => {
     { name: "Contact", href: "/Contact" },
   ];
 
+  const publicResources = [
+    { name: "By-laws", href: "/public-resources/By-Laws" },
+    { name: "Standing Orders", href: "/public-resources/standing-orders" },
+    { name: "Constitution", href: "/public-resources/Constitution" },
+    { name: "PCS Act 2019", href: "/public-resources/pcs-act-2019" },
+    { name: "Strategic Plan 2019-2030 PSC", href: "/public-resources/strategic-plan" },
+  ];
+
   return (
     <header className="bg-gray-100 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center relative">
@@ -64,7 +81,7 @@ const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop Menu */}
-        <nav className="hidden md:flex space-x-8 text-[#002366] font-medium">
+        <nav className="hidden md:flex space-x-8 text-[#002366] font-medium items-center">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
 
