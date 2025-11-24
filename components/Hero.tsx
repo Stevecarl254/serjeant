@@ -85,7 +85,7 @@ const HeroSection: React.FC = () => {
       </div>
 
       {/* Floating Images */}
-      <div className="absolute inset-0 z-20">
+      <div className="absolute inset-0 z-20 pointer-events-none">
         {images.map((img, i) => (
           <img
             key={i}

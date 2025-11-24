@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Phone, Lock, ArrowLeft } from "lucide-react";
+import { User, Mail, Phone, Lock, ArrowLeft, Hash } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -11,16 +11,17 @@ export default function RegisterPage() {
     name: "",
     email: "",
     phone: "",
+    membershipNumber: "",
     password: "",
     confirmPassword: ""
   });
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { name, email, phone, password, confirmPassword } = formData;
+    const { name, email, phone, membershipNumber, password, confirmPassword } = formData;
 
-    if (!name || !email || !phone || !password || !confirmPassword) {
+    if (!name || !email || !phone || !membershipNumber || !password || !confirmPassword) {
       setError("Please fill in all fields");
       return;
     }
@@ -30,18 +31,39 @@ export default function RegisterPage() {
       return;
     }
 
-    const redirectTo = sessionStorage.getItem("previousPage") || "/";
-    router.push(redirectTo);
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password, membershipNumber }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || 'Registration failed');
+        return;
+      }
+
+      const redirectTo = sessionStorage.getItem("previousPage") || "/login";
+      router.push(redirectTo);
+    } catch (err) {
+      setError("Something went wrong");
+    }
   };
 
   if (typeof window !== "undefined") {
     const prev = document.referrer;
-    if (prev) sessionStorage.setItem("previousPage", prev);
+    if (prev && !prev.includes('/login') && !prev.includes('/register')) {
+      sessionStorage.setItem("previousPage", prev);
+    }
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#002366] via-[#4a6ed1] to-[#9e9210] px-4">
-      
+
       {/* Back Button */}
       <button
         onClick={() => router.back()}
@@ -70,7 +92,7 @@ export default function RegisterPage() {
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
               placeholder="Full Name *"
-              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition"
+              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition text-gray-900"
             />
           </div>
 
@@ -83,7 +105,7 @@ export default function RegisterPage() {
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               placeholder="Email *"
-              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition"
+              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition text-gray-900"
             />
           </div>
 
@@ -96,7 +118,20 @@ export default function RegisterPage() {
               value={formData.phone}
               onChange={e => setFormData({ ...formData, phone: e.target.value })}
               placeholder="Phone Number *"
-              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition"
+              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition text-gray-900"
+            />
+          </div>
+
+          <div className="relative">
+            <Hash className="absolute top-3 left-3 w-5 h-5 text-[#9e9210]" />
+            <input
+              type="text"
+              name="membershipNumber"
+              required
+              value={formData.membershipNumber}
+              onChange={e => setFormData({ ...formData, membershipNumber: e.target.value })}
+              placeholder="Membership Number *"
+              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition text-gray-900"
             />
           </div>
 
@@ -109,7 +144,7 @@ export default function RegisterPage() {
               value={formData.password}
               onChange={e => setFormData({ ...formData, password: e.target.value })}
               placeholder="Password *"
-              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition"
+              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition text-gray-900"
             />
           </div>
 
@@ -122,7 +157,7 @@ export default function RegisterPage() {
               value={formData.confirmPassword}
               onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
               placeholder="Confirm Password *"
-              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition"
+              className="w-full border border-[#9e9210] rounded-xl px-10 py-3 focus:outline-none focus:ring-2 focus:ring-[#002366] transition text-gray-900"
             />
           </div>
 

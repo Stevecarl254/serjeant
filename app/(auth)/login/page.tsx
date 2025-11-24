@@ -2,16 +2,42 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaEnvelope, FaLock, FaArrowLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-
+import { FaEnvelope, FaLock, FaArrowLeft } from "react-icons/fa";
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || 'Login failed');
+        return;
+      }
+
+      router.push('/');
+    } catch (err) {
+      setError("Something went wrong");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#002366] to-[#9e9210] px-4">
-      
+
       {/* Back Button OUTSIDE the card */}
       <button
         onClick={() => router.back()}
@@ -26,15 +52,21 @@ export default function LoginPage() {
           Login to Your Account
         </h2>
 
-        <form className="w-full space-y-5">
+        {error && (
+          <p className="text-red-500 text-sm mb-3 text-center font-medium">{error}</p>
+        )}
+
+        <form onSubmit={handleSubmit} className="w-full space-y-5">
           {/* Email */}
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
             <input
-              type="email"
-              placeholder="Email address *"
+              type="text"
+              placeholder="Email or Membership Number *"
               required
-              className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#9e9210] focus:outline-none"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#9e9210] focus:outline-none text-gray-900"
             />
           </div>
 
@@ -45,7 +77,9 @@ export default function LoginPage() {
               type={showPassword ? "text" : "password"}
               placeholder="Password *"
               required
-              className="w-full pl-10 pr-14 py-3 border rounded-lg focus:ring-2 focus:ring-[#9e9210] focus:outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-10 pr-14 py-3 border rounded-lg focus:ring-2 focus:ring-[#9e9210] focus:outline-none text-gray-900"
             />
             <button
               type="button"

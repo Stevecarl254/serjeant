@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="w-full bg-[#002366] text-white py-16 px-6 md:px-16 relative">
       <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-10">
-        
+
         {/* About */}
         <div>
           <h3 className="text-xl font-bold mb-4">Serjeant At Arms Society</h3>
@@ -25,6 +25,7 @@ const Footer: React.FC = () => {
             <li><Link href="/about" className="hover:text-[#9e9210] transition">About Us</Link></li>
             <li><Link href="/events" className="hover:text-[#9e9210] transition">Events</Link></li>
             <li><Link href="/membership" className="hover:text-[#9e9210] transition">Membership</Link></li>
+            <li><Link href="/Gallery" className="hover:text-[#9e9210] transition">Gallery</Link></li>
             <li><Link href="/faq" className="hover:text-[#9e9210] transition">FAQ</Link></li>
           </ul>
         </div>

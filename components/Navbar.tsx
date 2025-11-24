@@ -38,8 +38,20 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/About" },
-    { name: "Events", href: "/Event" },
-    { name: "Membership", href: "/Membership" },
+    { name: "Events", href: "/events" },
+    { name: "Membership", href: "/membership" },
+    { name: "Gallery", href: "/Gallery" },
+    {
+      name: "Resources",
+      href: "#",
+      children: [
+        { name: "Constitution", href: "/public-resources/Constitution" },
+        { name: "By-Laws", href: "/public-resources/By-Laws" },
+        { name: "Standing Orders", href: "/public-resources/standing-orders" },
+        { name: "Strategic Plan", href: "/public-resources/strategic-plan" },
+        { name: "PCS Act 2019", href: "/public-resources/pcs-act-2019" },
+      ]
+    },
     { name: "Contact", href: "/Contact" },
   ];
 
@@ -55,19 +67,41 @@ const Navbar: React.FC = () => {
         <nav className="hidden md:flex space-x-8 text-[#002366] font-medium">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
+
+            if (link.children) {
+              return (
+                <div key={link.name} className="relative group">
+                  <button className="flex items-center space-x-1 hover:text-[#9e9210] transition py-2">
+                    <span>{link.name}</span>
+                  </button>
+                  <div className="absolute left-0 mt-0 w-56 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                    <div className="py-2">
+                      {link.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className="block px-4 py-2 text-sm hover:bg-[#9e9210]/10 hover:text-[#9e9210] transition"
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative group ${
-                  isActive ? "font-bold text-[#9e9210]" : "text-[#002366]"
-                }`}
+                className={`relative group flex items-center ${isActive ? "font-bold text-[#9e9210]" : "text-[#002366]"
+                  }`}
               >
                 {link.name}
                 <span
-                  className={`absolute left-0 -bottom-1 h-0.5 bg-[#9e9210] transition-all duration-300 ${
-                    isActive ? "w-full" : "w-0 group-hover:w-full"
-                  }`}
+                  className={`absolute left-0 -bottom-1 h-0.5 bg-[#9e9210] transition-all duration-300 ${isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
                 ></span>
               </Link>
             );
@@ -143,15 +177,32 @@ const Navbar: React.FC = () => {
         <div className="md:hidden bg-gray-50 border-t border-gray-200">
           <nav className="flex flex-col space-y-2 p-4 text-[#002366] font-medium">
             {navLinks.map((link) => {
+              if (link.children) {
+                return (
+                  <div key={link.name} className="flex flex-col space-y-2">
+                    <span className="font-bold text-[#9e9210]">{link.name}</span>
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={() => setIsOpen(false)}
+                        className="pl-4 py-1 hover:text-[#9e9210] transition text-sm"
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                );
+              }
+
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`hover:text-[#9e9210] ${
-                    isActive ? "font-bold text-[#9e9210]" : ""
-                  }`}
+                  className={`hover:text-[#9e9210] ${isActive ? "font-bold text-[#9e9210]" : ""
+                    }`}
                 >
                   {link.name}
                 </Link>
