@@ -8,10 +8,8 @@ export default function AdminDashboard() {
   const stats = [
     { name: "Members", count: 124, icon: <User className="w-6 h-6" /> },
     { name: "Events", count: 37, icon: <Calendar className="w-6 h-6" /> },
-    { name: "Publications", count: 54, icon: <FileText className="w-6 h-6" /> },
     { name: "Gallery Items", count: 128, icon: <Image className="w-6 h-6" /> },
     { name: "Resources", count: 32, icon: <Archive className="w-6 h-6" /> },
-    { name: "Announcements", count: 15, icon: <Megaphone className="w-6 h-6" /> },
   ];
 
   const recentActivity = [

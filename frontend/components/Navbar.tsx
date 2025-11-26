@@ -2,41 +2,33 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { User, LogIn, UserPlus, Settings, LogOut, Menu, X, ChevronDown } from "lucide-react";
 
 const Navbar: React.FC = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isMobileAccountOpen, setIsMobileAccountOpen] = useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
+  const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
 
   const accountRefDesktop = useRef<HTMLDivElement>(null);
   const accountRefMobile = useRef<HTMLDivElement>(null);
   const resourcesRefDesktop = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        accountRefDesktop.current &&
-        !accountRefDesktop.current.contains(event.target as Node)
-      ) {
+      if (accountRefDesktop.current && !accountRefDesktop.current.contains(event.target as Node)) {
         setIsAccountOpen(false);
       }
-
-      if (
-        accountRefMobile.current &&
-        !accountRefMobile.current.contains(event.target as Node)
-      ) {
+      if (accountRefMobile.current && !accountRefMobile.current.contains(event.target as Node)) {
         setIsMobileAccountOpen(false);
       }
-
-      if (
-        resourcesRefDesktop.current &&
-        !resourcesRefDesktop.current.contains(event.target as Node)
-      ) {
+      if (resourcesRefDesktop.current && !resourcesRefDesktop.current.contains(event.target as Node)) {
         setIsResourcesOpen(false);
       }
     };
@@ -48,7 +40,7 @@ const Navbar: React.FC = () => {
     { name: "Home", href: "/" },
     { name: "About", href: "/About" },
     { name: "Events", href: "/events" },
-    { name: "Membership", href: "/membership" },
+    { name: "Membership", href: "/Membership" },
     { name: "Gallery", href: "/Gallery" },
     {
       name: "Resources",
@@ -64,14 +56,6 @@ const Navbar: React.FC = () => {
     { name: "Contact", href: "/Contact" },
   ];
 
-  const publicResources = [
-    { name: "By-laws", href: "/public-resources/By-Laws" },
-    { name: "Standing Orders", href: "/public-resources/standing-orders" },
-    { name: "Constitution", href: "/public-resources/Constitution" },
-    { name: "PCS Act 2019", href: "/public-resources/pcs-act-2019" },
-    { name: "Strategic Plan 2019-2030 PSC", href: "/public-resources/strategic-plan" },
-  ];
-
   return (
     <header className="bg-gray-100 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center relative">
@@ -81,29 +65,39 @@ const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop Menu */}
-        <nav className="hidden md:flex space-x-8 text-[#002366] font-medium items-center">
+        <nav className="hidden md:flex space-x-6 text-[#002366] font-medium items-center">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
 
             if (link.children) {
               return (
-                <div key={link.name} className="relative group">
-                  <button className="flex items-center space-x-1 hover:text-[#9e9210] transition py-2">
+                <div key={link.name} className="relative" ref={resourcesRefDesktop}>
+                  <button
+                    onClick={() => setIsResourcesOpen(!isResourcesOpen)}
+                    className="flex items-center space-x-1 hover:text-[#9e9210] transition py-2"
+                  >
                     <span>{link.name}</span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-300 ${isResourcesOpen ? "rotate-180" : "rotate-0"}`}
+                    />
                   </button>
-                  <div className="absolute left-0 mt-0 w-56 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
-                    <div className="py-2">
-                      {link.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className="block px-4 py-2 text-sm hover:bg-[#9e9210]/10 hover:text-[#9e9210] transition"
-                        >
-                          {child.name}
-                        </Link>
-                      ))}
+
+                  {isResourcesOpen && (
+                    <div className="absolute left-0 mt-2 w-60 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
+                      <div className="flex flex-col py-2">
+                        {link.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className="px-4 py-2 text-sm hover:bg-[#9e9210]/10 hover:text-[#9e9210] transition"
+                          >
+                            {child.name}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               );
             }
@@ -137,24 +131,15 @@ const Navbar: React.FC = () => {
 
           {isAccountOpen && (
             <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 animate-slide-down">
-              <Link
-                href="/login"
-                className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition"
-              >
+              <Link href="/login" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
                 <LogIn className="w-4 h-4 text-[#002366]" />
                 <span>Login</span>
               </Link>
-              <Link
-                href="/register"
-                className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition"
-              >
+              <Link href="/register" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
                 <UserPlus className="w-4 h-4 text-[#9e9210]" />
                 <span>Register</span>
               </Link>
-              <Link
-                href="/profile"
-                className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition"
-              >
+              <Link href="/profile" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
                 <Settings className="w-4 h-4 text-gray-500" />
                 <span>Profile Settings</span>
               </Link>
@@ -169,7 +154,6 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Buttons */}
         <div className="flex md:hidden items-center space-x-4">
-          {/* Account Icon */}
           <div ref={accountRefMobile}>
             <button
               onClick={() => setIsMobileAccountOpen(!isMobileAccountOpen)}
@@ -179,7 +163,6 @@ const Navbar: React.FC = () => {
             </button>
           </div>
 
-          {/* Hamburger Menu */}
           <button
             className="text-[#002366] hover:text-[#9e9210] transition"
             onClick={() => setIsOpen(!isOpen)}
@@ -196,18 +179,28 @@ const Navbar: React.FC = () => {
             {navLinks.map((link) => {
               if (link.children) {
                 return (
-                  <div key={link.name} className="flex flex-col space-y-2">
-                    <span className="font-bold text-[#9e9210]">{link.name}</span>
-                    {link.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        onClick={() => setIsOpen(false)}
-                        className="pl-4 py-1 hover:text-[#9e9210] transition text-sm"
-                      >
-                        {child.name}
-                      </Link>
-                    ))}
+                  <div key={link.name} className="flex flex-col space-y-1">
+                    <button
+                      onClick={() => setIsMobileResourcesOpen(!isMobileResourcesOpen)}
+                      className="flex items-center justify-between w-full font-bold text-[#9e9210] py-1"
+                    >
+                      <span>{link.name}</span>
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform duration-300 ${isMobileResourcesOpen ? "rotate-180" : "rotate-0"}`}
+                      />
+                    </button>
+                    {isMobileResourcesOpen &&
+                      link.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={() => setIsOpen(false)}
+                          className="pl-4 py-1 hover:text-[#9e9210] text-sm transition"
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
                   </div>
                 );
               }
@@ -218,8 +211,7 @@ const Navbar: React.FC = () => {
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`hover:text-[#9e9210] ${isActive ? "font-bold text-[#9e9210]" : ""
-                    }`}
+                  className={`hover:text-[#9e9210] ${isActive ? "font-bold text-[#9e9210]" : ""}`}
                 >
                   {link.name}
                 </Link>
@@ -229,32 +221,31 @@ const Navbar: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Account Dropdown */}
+      {/* Mobile Account Dropdown Fixed */}
       {isMobileAccountOpen && (
         <div className="md:hidden absolute top-16 right-4 w-48 bg-white rounded-xl shadow-lg border border-gray-100 animate-slide-down z-50">
-          <Link
-            href="/login"
-            className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition"
+          {[
+            { name: "Login", href: "/login", icon: <LogIn className="w-4 h-4 text-[#002366]" /> },
+            { name: "Register", href: "/register", icon: <UserPlus className="w-4 h-4 text-[#9e9210]" /> },
+            { name: "Profile Settings", href: "/profile", icon: <Settings className="w-4 h-4 text-gray-500" /> },
+          ].map((item) => (
+            <button
+              key={item.href}
+              onClick={() => {
+                setIsMobileAccountOpen(false);
+                router.push(item.href);
+              }}
+              className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition"
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </button>
+          ))}
+
+          <button
+            onClick={() => setIsMobileAccountOpen(false)}
+            className="flex items-center space-x-2 w-full px-4 py-2 text-left text-[#002366] hover:bg-[#9e9210]/20 transition"
           >
-            <LogIn className="w-4 h-4 text-[#002366]" />
-            <span>Login</span>
-          </Link>
-          <Link
-            href="/register"
-            className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition"
-          >
-            <UserPlus className="w-4 h-4 text-[#9e9210]" />
-            <span>Register</span>
-          </Link>
-          <Link
-            href="/profile"
-            className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition"
-          >
-            <Settings className="w-4 h-4 text-gray-500" />
-            <span>Profile Settings</span>
-          </Link>
-          <hr className="my-1" />
-          <button className="flex items-center space-x-2 w-full px-4 py-2 text-left text-[#002366] hover:bg-[#9e9210]/20 transition">
             <LogOut className="w-4 h-4 text-red-500" />
             <span>Logout</span>
           </button>

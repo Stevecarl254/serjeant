@@ -151,7 +151,7 @@ const AboutPage: React.FC = () => {
             transition={{ duration: 0.6 }}
           >
             <img
-              src="about-history.jpg"
+              src="conduct.jpeg"
               alt="History Image"
               className="rounded-2xl shadow-xl w-full max-w-md object-cover"
             />
