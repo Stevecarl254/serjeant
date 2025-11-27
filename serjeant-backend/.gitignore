@@ -1,0 +1,46 @@
+
+# === Node.js ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# === Environment Files ===
+
+
+# === OS / Editor Files ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+^~
+.idea/
+.vscode/
+*.bak
+
+# === Logs ===
+logs
+*.log
+logs/**/*.log
+
+# === Build / Cache ===
+dist/
+build/
+.cache/
+coverage/
+.tmp/
+
+# === Redis Dumps / Database Files ===
+dump.rdb
+
+# === Misc ===
+*.pid
+*.seed
+*.pid.lock
+
+# === PM2 ===
+pids
+*.pid
+*.pid.lock

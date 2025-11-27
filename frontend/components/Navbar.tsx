@@ -15,9 +15,22 @@ const Navbar: React.FC = () => {
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
   const accountRefDesktop = useRef<HTMLDivElement>(null);
   const accountRefMobile = useRef<HTMLDivElement>(null);
   const resourcesRefDesktop = useRef<HTMLDivElement>(null);
+
+  // Check login status
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("authToken");
+      const role = localStorage.getItem("userRole");
+      setIsLoggedIn(!!token);
+      setUserRole(role);
+    }
+  }, []);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -55,6 +68,15 @@ const Navbar: React.FC = () => {
     },
     { name: "Contact", href: "/Contact" },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userName");
+    setIsLoggedIn(false);
+    setUserRole(null);
+    router.push("/");
+  };
 
   return (
     <header className="bg-gray-100 shadow-sm sticky top-0 z-50">
@@ -131,23 +153,31 @@ const Navbar: React.FC = () => {
 
           {isAccountOpen && (
             <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 animate-slide-down">
-              <Link href="/login" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
-                <LogIn className="w-4 h-4 text-[#002366]" />
-                <span>Login</span>
-              </Link>
-              <Link href="/register" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
-                <UserPlus className="w-4 h-4 text-[#9e9210]" />
-                <span>Register</span>
-              </Link>
-              <Link href="/profile" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
-                <Settings className="w-4 h-4 text-gray-500" />
-                <span>Profile Settings</span>
-              </Link>
-              <hr className="my-1" />
-              <button className="flex items-center space-x-2 w-full px-4 py-2 text-left text-[#002366] hover:bg-[#9e9210]/20 transition">
-                <LogOut className="w-4 h-4 text-red-500" />
-                <span>Logout</span>
-              </button>
+              {!isLoggedIn && (
+                <>
+                  <Link href="/login" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
+                    <LogIn className="w-4 h-4 text-[#002366]" />
+                    <span>Login</span>
+                  </Link>
+                  <Link href="/register" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
+                    <UserPlus className="w-4 h-4 text-[#9e9210]" />
+                    <span>Register</span>
+                  </Link>
+                </>
+              )}
+              {isLoggedIn && (
+                <>
+                  <Link href="/profile" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
+                    <Settings className="w-4 h-4 text-gray-500" />
+                    <span>Profile Settings</span>
+                  </Link>
+                  <hr className="my-1" />
+                  <button onClick={handleLogout} className="flex items-center space-x-2 w-full px-4 py-2 text-left text-[#002366] hover:bg-[#9e9210]/20 transition">
+                    <LogOut className="w-4 h-4 text-red-500" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -164,7 +194,7 @@ const Navbar: React.FC = () => {
           </div>
 
           <button
-            className="text-[#002366] hover:text-[#9e9210] transition"
+            className="text-[#002366] hover:text-[#9e9210]"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X size={26} /> : <Menu size={26} />}
@@ -224,31 +254,30 @@ const Navbar: React.FC = () => {
       {/* Mobile Account Dropdown Fixed */}
       {isMobileAccountOpen && (
         <div className="md:hidden absolute top-16 right-4 w-48 bg-white rounded-xl shadow-lg border border-gray-100 animate-slide-down z-50">
-          {[
-            { name: "Login", href: "/login", icon: <LogIn className="w-4 h-4 text-[#002366]" /> },
-            { name: "Register", href: "/register", icon: <UserPlus className="w-4 h-4 text-[#9e9210]" /> },
-            { name: "Profile Settings", href: "/profile", icon: <Settings className="w-4 h-4 text-gray-500" /> },
-          ].map((item) => (
-            <button
-              key={item.href}
-              onClick={() => {
-                setIsMobileAccountOpen(false);
-                router.push(item.href);
-              }}
-              className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition"
-            >
-              {item.icon}
-              <span>{item.name}</span>
-            </button>
-          ))}
-
-          <button
-            onClick={() => setIsMobileAccountOpen(false)}
-            className="flex items-center space-x-2 w-full px-4 py-2 text-left text-[#002366] hover:bg-[#9e9210]/20 transition"
-          >
-            <LogOut className="w-4 h-4 text-red-500" />
-            <span>Logout</span>
-          </button>
+          {!isLoggedIn && (
+            <>
+              <button onClick={() => { setIsMobileAccountOpen(false); router.push("/login"); }} className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition">
+                <LogIn className="w-4 h-4 text-[#002366]" />
+                <span>Login</span>
+              </button>
+              <button onClick={() => { setIsMobileAccountOpen(false); router.push("/register"); }} className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition">
+                <UserPlus className="w-4 h-4 text-[#9e9210]" />
+                <span>Register</span>
+              </button>
+            </>
+          )}
+          {isLoggedIn && (
+            <>
+              <button onClick={() => { setIsMobileAccountOpen(false); router.push("/profile"); }} className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition">
+                <Settings className="w-4 h-4 text-gray-500" />
+                <span>Profile Settings</span>
+              </button>
+              <button onClick={() => { setIsMobileAccountOpen(false); handleLogout(); }} className="flex items-center space-x-2 w-full px-4 py-2 text-left text-[#002366] hover:bg-[#9e9210]/20 transition">
+                <LogOut className="w-4 h-4 text-red-500" />
+                <span>Logout</span>
+              </button>
+            </>
+          )}
         </div>
       )}
 
