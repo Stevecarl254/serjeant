@@ -11,6 +11,8 @@ import { connectRedis } from "./config/redis.js";
 import userRoutes from "./routes/userRoutes.js"
 import adminRoutes from "./routes/adminRoutes.js";
 import memberRoutes from "./routes/memberRoutes.js";
+import adminEventsRoutes from "./routes/adminEventsRoutes.js";
+import eventsRoutes from "./routes/eventsRoutes.js";
 
 dotenv.config();
 
@@ -48,6 +50,8 @@ const startServer = async () => {
     app.use("/api/users", userRoutes);
     app.use("/api/admin", adminRoutes);
     app.use("/api/members", memberRoutes);
+    app.use("/api/admin/events", adminEventsRoutes);
+    app.use("/api/events", eventsRoutes);
 
     // Not found handler
     app.use((req, res) => {
