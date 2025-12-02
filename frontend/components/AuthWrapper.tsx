@@ -13,6 +13,7 @@ export default function AuthWrapper({ children }: { children: ReactNode }) {
   const isAuthPage =
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register") ||
+    pathname?.startsWith("/profile") ||
     pathname?.startsWith("/admin"); // <-- hide for admin
 
   return (
