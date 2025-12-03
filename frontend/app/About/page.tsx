@@ -225,7 +225,7 @@ const AboutPage: React.FC = () => {
           </p>
           <Link href="/council">
             <button className="bg-[#9e9210] text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition">
-              View Council Members
+              View Interim Council Members
             </button>
           </Link>
         </div>
