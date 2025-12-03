@@ -14,6 +14,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import memberRoutes from "./routes/memberRoutes.js";
 import adminEventsRoutes from "./routes/adminEventsRoutes.js";
 import eventsRoutes from "./routes/eventsRoutes.js";
+import publicMemberRoutes from "./routes/publicMemberRoutes.js";
 
 dotenv.config();
 
@@ -48,6 +49,8 @@ const startServer = async () => {
     app.use("/api/members", memberRoutes);
     app.use("/api/admin/events", adminEventsRoutes);
     app.use("/api/events", eventsRoutes);
+    // Public registration
+    app.use("/api/members/public", publicMemberRoutes);
 
     // Not found handler
     app.use((req, res) => {

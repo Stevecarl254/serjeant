@@ -20,16 +20,20 @@ const memberSchema = new mongoose.Schema(
     },
     packageType: {
       type: String,
-      enum: ["Bronze", "Silver", "Gold"],
-      default: "Bronze",
+      enum: ["standard", "premium"],
+      default: "standard",
     },
     isActive: {
       type: Boolean,
       default: true,
     },
-    createdBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "User" 
+    paymentConfirmed: {
+      type: Boolean,
+      default: false,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
     }, // admin who added
   },
   { timestamps: true }

@@ -118,7 +118,7 @@ const MembershipPage: React.FC = () => {
               <li className="flex items-center gap-2 line-through text-gray-400"><FaTimesCircle className="text-red-500" /> Invitation to Annual National Gala</li>
               <li className="flex items-center gap-2 line-through text-gray-400"><FaTimesCircle className="text-red-500" /> Discounts on Society Merchandise</li>
             </ul>
-            <Link href="/membership/register/standard">
+            <Link href="/Membership/register/standard">
               <button className="w-full bg-[#002366] text-white py-3 rounded-lg shadow-md hover:bg-[#001847] transition font-semibold">
                 Join Standard
               </button>
@@ -145,7 +145,7 @@ const MembershipPage: React.FC = () => {
               <li className="flex items-center gap-2"><FaCheckCircle className="text-[#9e9210]" /> Invitation to Annual National Gala</li>
               <li className="flex items-center gap-2"><FaCheckCircle className="text-[#9e9210]" /> Discounts on Society Merchandise</li>
             </ul>
-            <Link href="/membership/register/premium">
+            <Link href="/Membership/register/premium">
               <button className="w-full bg-[#9e9210] text-white py-3 rounded-lg shadow-md hover:bg-[#7e7411] transition font-semibold">
                 Join Premium
               </button>
