@@ -7,6 +7,7 @@ import { dirname } from "path";
 
 import connectDB from "./config/db.js";
 import { connectRedis } from "./config/redis.js";
+import { corsOptions } from "./config/corsOptions.js";
 
 import userRoutes from "./routes/userRoutes.js"
 import adminRoutes from "./routes/adminRoutes.js";
@@ -26,13 +27,8 @@ const startServer = async () => {
 
     const app = express();
 
-    const corsOptions = {
-      origin: process.env.CLIENT_URL,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-      credentials: true,
-    };
-    app.use(cors());
+    app.use(cors(corsOptions));
+    app.options("*", cors(corsOptions));
 
     app.use(express.json());
 

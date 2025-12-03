@@ -1,3 +1,4 @@
+// routes/adminEventsRoutes.js
 import express from "express";
 import {
   getAllEventsAdmin,
@@ -13,7 +14,7 @@ import { logAction } from "../middleware/auditMiddleware.js";
 
 const router = express.Router();
 
-// GET all events (admin only)
+// GET all events (admin only) — NOW WITH PAGINATION
 router.get(
   "/",
   protect,

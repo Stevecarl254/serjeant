@@ -1,0 +1,23 @@
+"use client";
+import { useEffect, useState } from "react";
+import axiosInstance from "@/utils/axiosInstance";
+
+interface Event { _id: string; title: string; description: string; date: string; time: string; location: string; }
+
+export default function UpcomingEvents() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axiosInstance.get("/events", { params: { page: 1, limit: 3 } })
+      .then(res => setEvents(res.data.events || []))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p>Loading events…</p>;
+  return (
+    <div className="flex gap-4">
+      {events.map(e => <div key={e._id}>{e.title}</div>)}
+    </div>
+  );
+}

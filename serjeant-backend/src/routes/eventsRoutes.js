@@ -1,8 +1,10 @@
 import express from "express";
-import { getActiveEvents } from "../controllers/public/eventsController.js";
+import { getEventsUnified } from "../controllers/public/eventsController.js";
+import { logAction } from "../middleware/auditMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getActiveEvents);
+/* Single production endpoint */
+router.get("/", logAction("view_events"), getEventsUnified);
 
 export default router;
