@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axiosInstance";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function RegisterPage() {
   const params = useParams();
@@ -31,23 +32,23 @@ export default function RegisterPage() {
         packageType: plan,
       });
 
-      // Accept 201 as success
       if (res.status === 201) {
-        alert(res.data.message); // Show success message
+        toast.success(res.data.message);
 
-        if (plan === "premium") {
-          router.push("/membership/browse");
-        } else {
-          router.push(
-            "/?msg=Welcome%20to%20the%20Society!%20Your%20membership%20is%20active."
-          );
-        }
+        setTimeout(() => {
+          if (plan === "premium") {
+            router.push("/membership/browse");
+          } else {
+            router.push(
+              "/?msg=Welcome%20to%20the%20Society!%20Your%20membership%20is%20active."
+            );
+          }
+        }, 1500); // delay so user sees toast
       }
     } catch (err: any) {
-      // Handle errors including duplicates
       const message =
         err.response?.data?.message || "Registration failed. Try again.";
-      alert(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -55,6 +56,7 @@ export default function RegisterPage() {
 
   return (
     <div className="w-full flex justify-center py-20 px-6">
+      <Toaster position="top-center" reverseOrder={false} />
       <div className="max-w-lg w-full bg-white p-8 rounded-2xl shadow-xl border">
         <h1 className="text-3xl font-bold text-[#002366] mb-6">
           {plan === "premium" ? "Premium Membership" : "Standard Membership"}
