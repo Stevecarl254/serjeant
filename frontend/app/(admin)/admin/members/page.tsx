@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axiosInstance from "../../../../lib/axiosInstance"; // adjust path if needed
+import axiosInstance from "../../../../lib/axiosInstance";
+import toast, { Toaster } from "react-hot-toast";
 
 interface Member {
   _id: string;
@@ -10,13 +11,16 @@ interface Member {
   phone: string;
   packageType: string;
   isActive: boolean;
+  membershipNumber?: string;
   createdAt: string;
 }
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [showAddModal, setShowAddModal] = useState(false);
+
   const [newMember, setNewMember] = useState({
     fullName: "",
     email: "",
@@ -24,40 +28,65 @@ export default function MembersPage() {
     packageType: "",
   });
 
-  // Fetch Members
+  // Load members on mount
   useEffect(() => {
     async function loadMembers() {
       try {
         const res = await axiosInstance.get("/members");
-        setMembers(Array.isArray(res.data) ? res.data : res.data.members || []);
+
+        const payload = Array.isArray(res.data)
+          ? res.data
+          : res.data.members || [];
+
+        setMembers(payload);
       } catch (err) {
         console.error("Failed to load members:", err);
+        toast.error("Unable to load members.");
         setMembers([]);
       } finally {
         setLoading(false);
       }
     }
+
     loadMembers();
   }, []);
 
-  // Add Member Handler
+  // Add new member
   const addMember = async () => {
     try {
       const res = await axiosInstance.post("/members", newMember);
-      if (res.data.member) {
-        setMembers((prev) => [...prev, res.data.member]);
+
+      if (res.status === 201) {
+        const created = res.data.member;
+
+        setMembers((prev) => [...prev, created]);
+        toast.success(`Member created. #${created.membershipNumber}`);
+
         setShowAddModal(false);
-        setNewMember({ fullName: "", email: "", phone: "", packageType: "" });
+        setNewMember({
+          fullName: "",
+          email: "",
+          phone: "",
+          packageType: "",
+        });
       }
-    } catch (err) {
-      console.error("Error adding member:", err);
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || "Failed to add member.";
+      toast.error(message);
     }
   };
 
   return (
     <div className="p-8 space-y-6">
+      <Toaster position="top-center" />
+
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">Members Management</h1>
+        <h1 className="text-3xl font-bold text-gray-800">
+          Members Management
+        </h1>
+
         <button
           onClick={() => setShowAddModal(true)}
           className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
@@ -66,10 +95,12 @@ export default function MembersPage() {
         </button>
       </div>
 
+      {/* Members Table */}
       <div className="bg-white shadow-md rounded-xl overflow-hidden">
         <table className="w-full border-collapse">
           <thead className="bg-gray-100">
             <tr>
+              <th className="p-4 text-left">Membership #</th>
               <th className="p-4 text-left">Name</th>
               <th className="p-4 text-left">Email</th>
               <th className="p-4 text-left">Phone</th>
@@ -78,30 +109,44 @@ export default function MembersPage() {
               <th className="p-4 text-left">Joined</th>
             </tr>
           </thead>
+
           <tbody>
             {loading ? (
               <tr>
-                <td className="p-6 text-center text-gray-500" colSpan={6}>Loading...</td>
+                <td className="p-6 text-center text-gray-500" colSpan={7}>
+                  Loading...
+                </td>
               </tr>
             ) : members.length === 0 ? (
               <tr>
-                <td className="p-6 text-center text-gray-500" colSpan={6}>No members found.</td>
+                <td className="p-6 text-center text-gray-500" colSpan={7}>
+                  No members found.
+                </td>
               </tr>
             ) : (
               members.map((m) => (
                 <tr key={m._id} className="border-b hover:bg-gray-50">
+                  <td className="p-4 font-semibold">
+                    {m.membershipNumber || "-"}
+                  </td>
                   <td className="p-4">{m.fullName}</td>
                   <td className="p-4">{m.email}</td>
                   <td className="p-4">{m.phone}</td>
-                  <td className="p-4">{m.packageType}</td>
+                  <td className="p-4 capitalize">{m.packageType}</td>
                   <td className="p-4">
                     {m.isActive ? (
-                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">Active</span>
+                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                        Active
+                      </span>
                     ) : (
-                      <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">Inactive</span>
+                      <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
+                        Inactive
+                      </span>
                     )}
                   </td>
-                  <td className="p-4">{new Date(m.createdAt).toLocaleDateString()}</td>
+                  <td className="p-4">
+                    {new Date(m.createdAt).toLocaleDateString()}
+                  </td>
                 </tr>
               ))
             )}
@@ -113,38 +158,51 @@ export default function MembersPage() {
       {showAddModal && (
         <div className="fixed inset-0 flex items-center justify-center p-4 z-50 bg-white overflow-auto">
           <div className="bg-white w-full h-full max-w-5xl rounded-xl shadow-lg p-8 space-y-6 overflow-auto">
-            <h2 className="text-2xl font-semibold text-gray-800">Add New Member</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Add New Member
+            </h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="Full Name"
                 value={newMember.fullName}
-                onChange={(e) => setNewMember({ ...newMember, fullName: e.target.value })}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, fullName: e.target.value })
+                }
                 className="w-full border p-3 rounded-lg"
               />
+
               <input
                 type="email"
                 placeholder="Email"
                 value={newMember.email}
-                onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, email: e.target.value })
+                }
                 className="w-full border p-3 rounded-lg"
               />
+
               <input
                 type="text"
                 placeholder="Phone Number"
                 value={newMember.phone}
-                onChange={(e) => setNewMember({ ...newMember, phone: e.target.value })}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, phone: e.target.value })
+                }
                 className="w-full border p-3 rounded-lg"
               />
+
               <select
                 value={newMember.packageType}
-                onChange={(e) => setNewMember({ ...newMember, packageType: e.target.value })}
+                onChange={(e) =>
+                  setNewMember({ ...newMember, packageType: e.target.value })
+                }
                 className="w-full border p-3 rounded-lg"
               >
                 <option value="">Select Package</option>
-                <option value="Bronze">Bronze – 500 KES</option>
-                <option value="Silver">Silver – 1,000 KES</option>
-                <option value="Gold">Gold – 2,000 KES</option>
+                <option value="standard">Standard – 1,000 KES</option>
+                <option value="premium">Premium – 2,000 KES</option>
               </select>
             </div>
 
@@ -155,6 +213,7 @@ export default function MembersPage() {
               >
                 Cancel
               </button>
+
               <button
                 onClick={addMember}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

@@ -11,7 +11,7 @@ import { corsOptions } from "./config/corsOptions.js";
 
 import userRoutes from "./routes/userRoutes.js"
 import adminRoutes from "./routes/adminRoutes.js";
-import memberRoutes from "./routes/memberRoutes.js";
+import adminMemberRoutes from "./routes/adminMemberRoutes.js";
 import adminEventsRoutes from "./routes/adminEventsRoutes.js";
 import eventsRoutes from "./routes/eventsRoutes.js";
 import publicMemberRoutes from "./routes/publicMemberRoutes.js";
@@ -46,7 +46,7 @@ const startServer = async () => {
     // API Routes
     app.use("/api/users", userRoutes);
     app.use("/api/admin", adminRoutes);
-    app.use("/api/members", memberRoutes);
+    app.use("/api/members", adminMemberRoutes);
     app.use("/api/admin/events", adminEventsRoutes);
     app.use("/api/events", eventsRoutes);
     // Public registration

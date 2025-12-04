@@ -10,12 +10,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const plan = params.plan === "premium" ? "premium" : "standard";
 
-  const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-  });
-
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "" });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,22 +28,21 @@ export default function RegisterPage() {
       });
 
       if (res.status === 201) {
-        toast.success(res.data.message);
+        const membershipNo = res.data.member.membershipNumber;
+
+        toast.success(
+          `🎉 ${res.data.message}\nMembership Number: ${membershipNo}`,
+          { duration: 60000 } 
+        );
 
         setTimeout(() => {
-          if (plan === "premium") {
-            router.push("/membership/browse");
-          } else {
-            router.push(
-              "/?msg=Welcome%20to%20the%20Society!%20Your%20membership%20is%20active."
-            );
-          }
-        }, 1500); // delay so user sees toast
+          if (plan === "premium") router.push("/membership/browse");
+          else router.push("/?msg=Welcome to the Society! Your membership is active.");
+        }, 2000);
       }
     } catch (err: any) {
-      const message =
-        err.response?.data?.message || "Registration failed. Try again.";
-      toast.error(message);
+      const message = err.response?.data?.message || "Registration failed. Try again.";
+      toast.error(message, { duration: 5000 });
     } finally {
       setLoading(false);
     }
@@ -63,43 +57,12 @@ export default function RegisterPage() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            className="w-full border rounded-lg p-3"
-            name="fullName"
-            placeholder="Full Name"
-            value={form.fullName}
-            onChange={handleChange}
-            required
-          />
+          <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} required className="w-full border rounded-lg p-3"/>
+          <input name="email" placeholder="Email Address" value={form.email} onChange={handleChange} required className="w-full border rounded-lg p-3"/>
+          <input name="phone" placeholder="Phone Number" value={form.phone} onChange={handleChange} required className="w-full border rounded-lg p-3"/>
 
-          <input
-            className="w-full border rounded-lg p-3"
-            name="email"
-            placeholder="Email Address"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            className="w-full border rounded-lg p-3"
-            name="phone"
-            placeholder="Phone Number"
-            value={form.phone}
-            onChange={handleChange}
-            required
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 rounded-lg text-white font-semibold shadow-md ${
-              plan === "premium"
-                ? "bg-[#9e9210] hover:bg-[#7e7411]"
-                : "bg-[#002366] hover:bg-[#001847]"
-            } transition`}
-          >
-            {loading ? "Processing…" : `Join ${plan === "premium" ? "Premium" : "Standard"}`}
+          <button type="submit" disabled={loading} className={`w-full py-3 rounded-lg text-white font-semibold shadow-md ${plan==="premium"?"bg-[#9e9210] hover:bg-[#7e7411]":"bg-[#002366] hover:bg-[#001847]"} transition`}>
+            {loading ? "Processing…" : `Join ${plan==="premium"?"Premium":"Standard"}`}
           </button>
         </form>
       </div>

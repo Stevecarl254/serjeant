@@ -33,8 +33,13 @@ const memberSchema = new mongoose.Schema(
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }, // admin who added
+      ref: "User",
+    },
+    membershipNumber: {
+      type: String,
+      unique: true,
+      required: true,
+    },
   },
   { timestamps: true }
 );
