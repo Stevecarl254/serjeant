@@ -1,5 +1,4 @@
 import Member from "../models/Member.js";
-import { generateMembershipNumber } from "../utils/generateMembershipNumber.js";
 
 export const registerMember = async (req, res) => {
   try {
@@ -17,21 +16,19 @@ export const registerMember = async (req, res) => {
       return res.status(400).json({ message: "A member with this email already exists." });
     }
 
-    const membershipNumber = await generateMembershipNumber();
-
+    // Create member record without membership number (payment pending)
     const member = await Member.create({
       fullName,
       email: normalizedEmail,
       phone,
       packageType: pkg,
-      membershipNumber,
-      isActive: true,
+      isActive: false,
       paymentConfirmed: false,
     });
 
     res.status(201).json({
-	message: `🎉 Congratulations, ${member.fullName}. You are our newest member!}.`,
-      member,
+      message: `🎉 Hi ${member.fullName}, please complete payment to activate membership.`,
+      memberId: member._id, // we’ll pass this to payment page
     });
   } catch (error) {
     if (error.code === 11000) {

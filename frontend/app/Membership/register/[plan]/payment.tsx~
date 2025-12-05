@@ -1,0 +1,72 @@
+"use client";
+
+import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import axiosInstance from "@/lib/axiosInstance";
+import toast, { Toaster } from "react-hot-toast";
+
+export default function PaymentPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const memberId = searchParams.get("memberId");
+  const plan = searchParams.get("plan") === "premium" ? "premium" : "standard";
+  const prefillName = searchParams.get("fullName") || "";
+  const prefillEmail = searchParams.get("email") || "";
+  const [fullName] = useState(prefillName);
+  const [email] = useState(prefillEmail);
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const amount = plan === "premium" ? 2000 : 1000;
+
+  const handlePayment = async () => {
+    if (!phone) return toast.error("Phone number is required", { duration: 4000 });
+
+    setLoading(true);
+    try {
+      const res = await axiosInstance.post("/payments/process", {
+        fullName,
+        email,
+        phone,
+        packageType: plan,
+        amount,
+        memberId,
+      });
+
+      if (res.status === 201) {
+        toast.success(`🎉 Payment successful! Membership Number: ${res.data.member.membershipNumber}`, { duration: 5000 });
+        setTimeout(() => router.push("/profile"), 2000);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Payment failed", { duration: 5000 });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full flex justify-center py-20 px-6">
+      <Toaster position="top-center" reverseOrder={false} />
+      <div className="max-w-lg w-full bg-white p-8 rounded-2xl shadow-xl border">
+        <h1 className="text-3xl font-bold text-[#002366] mb-6">
+          {plan === "premium" ? "Premium Membership Payment" : "Standard Membership Payment"}
+        </h1>
+
+        <div className="space-y-4">
+          <input value={fullName} readOnly className="w-full border rounded-lg p-3 bg-gray-100"/>
+          <input value={email} readOnly className="w-full border rounded-lg p-3 bg-gray-100"/>
+          <input placeholder="Phone Number (M-Pesa)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded-lg p-3"/>
+
+          <div className="text-gray-700 font-semibold">
+            Amount to Pay: KES {amount}
+          </div>
+
+          <button onClick={handlePayment} disabled={loading} className="w-full py-3 rounded-lg text-white font-semibold shadow-md bg-[#9e9210] hover:bg-[#7e7411] transition">
+            {loading ? "Processing…" : "Pay Now"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
