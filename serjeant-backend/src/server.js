@@ -16,6 +16,9 @@ import adminEventsRoutes from "./routes/adminEventsRoutes.js";
 import eventsRoutes from "./routes/eventsRoutes.js";
 import publicMemberRoutes from "./routes/publicMemberRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import councilRoutes from "./routes/councilRoutes.js";
+import adminDashboardRoutes from "./routes/adminDashboardRoutes.js";
+import adminResourceRoutes from "./routes/adminResourceRoutes.js";
 
 dotenv.config();
 
@@ -53,6 +56,9 @@ const startServer = async () => {
     // Public registration
     app.use("/api/members/public", publicMemberRoutes);
     app.use("/api/payments", paymentRoutes);
+    app.use("/api/council", councilRoutes);
+    app.use("/api/adminDashboard", adminDashboardRoutes);
+    app.use("/api/admin/resources", adminResourceRoutes);
 
     // Not found handler
     app.use((req, res) => {

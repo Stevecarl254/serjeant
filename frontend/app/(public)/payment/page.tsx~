@@ -1,0 +1,109 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
+import { useGuard } from "@/hooks/useGuard";
+import { useMember } from "@/context/MemberContext";
+import axiosInstance from "@/lib/axiosInstance";
+
+export default function PaymentPage() {
+  useGuard("payment");
+
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const { markPaymentConfirmed, refreshMember } = useMember();
+
+  const qsId = params?.get("memberId");
+  const [memberId, setMemberId] = useState<string | null>(qsId);
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Sync memberId between query → state → localStorage
+  useEffect(() => {
+    const stored =
+      typeof window !== "undefined" ? localStorage.getItem("memberId") : null;
+
+    if (qsId) {
+      localStorage.setItem("memberId", qsId);
+      setMemberId(qsId);
+      return;
+    }
+
+    if (!memberId && stored) {
+      setMemberId(stored);
+    }
+  }, [qsId, memberId]);
+
+  const handlePayment = async () => {
+    if (!memberId) return toast.error("Member ID missing.");
+
+    const cleaned = phone.replace(/\s+/g, "");
+    if (!/^\+?\d{9,15}$/.test(cleaned)) {
+      return toast.error("Enter a valid phone number.");
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await axiosInstance.post("/payments/process", {
+        memberId,
+        phone: cleaned,
+        amount: 500,
+      });
+
+      if (res.status === 200 || res.status === 201) {
+        localStorage.setItem("memberId", memberId);
+
+        markPaymentConfirmed(); // optimistic
+
+        await refreshMember(); // authoritative
+
+        toast.success("Payment successful! Redirecting…");
+
+        setTimeout(() => {
+          router.push("/profile");
+        }, 800);
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Payment failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full flex justify-center py-20 px-6">
+      <Toaster position="top-center" />
+
+      <div className="max-w-lg w-full bg-white p-8 rounded-xl shadow">
+        <h1 className="text-2xl font-bold mb-4">Complete Your Payment</h1>
+
+        <p className="text-sm text-gray-600 mb-4">
+          Member ID:{" "}
+          <span className="font-medium">{memberId ?? "—"}</span>
+        </p>
+
+        <input
+          placeholder="M-Pesa Phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full border rounded-lg p-3 mb-4"
+        />
+
+        <button
+          onClick={handlePayment}
+          disabled={loading}
+          className={`w-full py-3 rounded-lg font-semibold transition ${
+            loading
+              ? "bg-gray-300 text-gray-700"
+              : "bg-green-600 text-white hover:bg-green-700"
+          }`}
+        >
+          {loading ? "Processing…" : "Pay Now"}
+        </button>
+      </div>
+    </div>
+  );
+}

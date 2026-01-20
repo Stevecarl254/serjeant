@@ -68,13 +68,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="flex-1 p-6 overflow-auto">
         <header className="mb-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-[#002366]">Dashboard</h1>
-          {/* Placeholder for user avatar or top actions */}
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-[#9e9210] rounded-full"></div>
           </div>
         </header>
 
-        {/* Content area */}
         <div className="bg-white shadow rounded-xl p-6 min-h-[70vh]">
           {children}
         </div>

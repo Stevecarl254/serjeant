@@ -3,11 +3,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, LogIn, UserPlus, Settings, LogOut, Menu, X, ChevronDown } from "lucide-react";
+import {
+  User,
+  LogIn,
+  UserPlus,
+  Settings,
+  LogOut,
+  ChevronDown,
+  Menu,
+  X,
+} from "lucide-react";
+import { useMember } from "@/context/MemberContext";
 
 const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
+
+  const { member, hydrated } = useMember();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -15,20 +27,17 @@ const Navbar: React.FC = () => {
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-
   const accountRefDesktop = useRef<HTMLDivElement>(null);
   const accountRefMobile = useRef<HTMLDivElement>(null);
   const resourcesRefDesktop = useRef<HTMLDivElement>(null);
 
-  // Check login status
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Determine login status
   useEffect(() => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("authToken");
-      const role = localStorage.getItem("userRole");
       setIsLoggedIn(!!token);
-      setUserRole(role);
     }
   }, []);
 
@@ -45,6 +54,7 @@ const Navbar: React.FC = () => {
         setIsResourcesOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -69,13 +79,21 @@ const Navbar: React.FC = () => {
     { name: "Contact", href: "/Contact" },
   ];
 
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userName");
+    localStorage.removeItem("memberId");
     setIsLoggedIn(false);
-    setUserRole(null);
     router.push("/");
+  };
+
+  // Go to profile
+  const handleProfile = () => {
+    router.push("/profile");
+    setIsAccountOpen(false);
+    setIsMobileAccountOpen(false);
   };
 
   return (
@@ -86,7 +104,7 @@ const Navbar: React.FC = () => {
           Serjeant<span className="text-[#9e9210]">AtArms</span>
         </Link>
 
-        {/* Desktop Menu */}
+        {/* Desktop Links */}
         <nav className="hidden md:flex space-x-6 text-[#002366] font-medium items-center">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -159,7 +177,7 @@ const Navbar: React.FC = () => {
                     <LogIn className="w-4 h-4 text-[#002366]" />
                     <span>Login</span>
                   </Link>
-                  <Link href="/register" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
+                  <Link href="/Membership/register/standard" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
                     <UserPlus className="w-4 h-4 text-[#9e9210]" />
                     <span>Register</span>
                   </Link>
@@ -167,10 +185,10 @@ const Navbar: React.FC = () => {
               )}
               {isLoggedIn && (
                 <>
-                  <Link href="/profile" className="flex items-center space-x-2 px-4 py-2 hover:bg-[#9e9210]/20 text-[#002366] transition">
+                  <button onClick={handleProfile} className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition">
                     <Settings className="w-4 h-4 text-gray-500" />
                     <span>Profile Settings</span>
-                  </Link>
+                  </button>
                   <hr className="my-1" />
                   <button onClick={handleLogout} className="flex items-center space-x-2 w-full px-4 py-2 text-left text-[#002366] hover:bg-[#9e9210]/20 transition">
                     <LogOut className="w-4 h-4 text-red-500" />
@@ -193,10 +211,7 @@ const Navbar: React.FC = () => {
             </button>
           </div>
 
-          <button
-            className="text-[#002366] hover:text-[#9e9210]"
-            onClick={() => setIsOpen(!isOpen)}
-          >
+          <button className="text-[#002366] hover:text-[#9e9210]" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
         </div>
@@ -251,7 +266,7 @@ const Navbar: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Account Dropdown Fixed */}
+      {/* Mobile Account Dropdown */}
       {isMobileAccountOpen && (
         <div className="md:hidden absolute top-16 right-4 w-48 bg-white rounded-xl shadow-lg border border-gray-100 animate-slide-down z-50">
           {!isLoggedIn && (
@@ -260,7 +275,7 @@ const Navbar: React.FC = () => {
                 <LogIn className="w-4 h-4 text-[#002366]" />
                 <span>Login</span>
               </button>
-              <button onClick={() => { setIsMobileAccountOpen(false); router.push("/register"); }} className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition">
+              <button onClick={() => { setIsMobileAccountOpen(false); router.push("/Membership/register/standard"); }} className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition">
                 <UserPlus className="w-4 h-4 text-[#9e9210]" />
                 <span>Register</span>
               </button>
@@ -268,7 +283,7 @@ const Navbar: React.FC = () => {
           )}
           {isLoggedIn && (
             <>
-              <button onClick={() => { setIsMobileAccountOpen(false); router.push("/profile"); }} className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition">
+              <button onClick={() => { setIsMobileAccountOpen(false); handleProfile(); }} className="flex items-center space-x-2 px-4 py-2 w-full hover:bg-[#9e9210]/20 text-[#002366] transition">
                 <Settings className="w-4 h-4 text-gray-500" />
                 <span>Profile Settings</span>
               </button>
@@ -283,18 +298,10 @@ const Navbar: React.FC = () => {
 
       <style jsx>{`
         @keyframes slide-down {
-          0% {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          0% { opacity: 0; transform: translateY(-10px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
-        .animate-slide-down {
-          animation: slide-down 0.25s ease-out;
-        }
+        .animate-slide-down { animation: slide-down 0.25s ease-out; }
       `}</style>
     </header>
   );

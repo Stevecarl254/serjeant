@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, ChangeEvent } from "react";
+import axiosInstance from "@/lib/axiosInstance";
 
 interface Resource {
   _id: string;
@@ -11,100 +12,118 @@ interface Resource {
   description?: string;
 }
 
-const categories = ["Bylaws", "Standing Orders", "Constitution", "Strategic Plan", "PCS Act 2019"];
+const categories = [
+  "Bylaws",
+  "Standing Orders",
+  "Constitution",
+  "Strategic Plan",
+  "PCS Act 2019",
+  "Certificate Template",
+  "Other",
+];
 
 export default function AdminResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newResource, setNewResource] = useState<Resource>({
-    _id: "",
+  const [uploading, setUploading] = useState(false);
+
+  const [newResource, setNewResource] = useState({
     title: "",
-    type: "PDF",
+    type: "PDF" as "PDF" | "Link",
     category: "",
-    fileUrl: "",
+    file: null as File | null,
+    link: "",
     description: "",
   });
 
-  const [uploading, setUploading] = useState(false);
-
-  // Load resources
+  // Load resources from backend
   useEffect(() => {
-    async function loadResources() {
+    const loadResources = async () => {
       try {
-        const res = await fetch("/api/admin/resources");
-        const data = await res.json();
-        if (Array.isArray(data.resources)) setResources(data.resources);
-      } catch (error) {
-        console.error("Failed to load resources", error);
+        const res = await axiosInstance.get("/admin/resources");
+        setResources(res.data); // backend returns an array
+      } catch (err) {
+        console.error("Failed to load resources", err);
       } finally {
         setLoading(false);
       }
-    }
+    };
+
     loadResources();
   }, []);
 
-  // Upload PDF
-  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+  // Handle PDF file selection
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-
-    setUploading(true);
-    try {
-      const res = await fetch("/api/admin/resources/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok && data.fileUrl) {
-        setNewResource({ ...newResource, fileUrl: data.fileUrl });
-      } else {
-        console.error(data.message || "Upload failed");
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setUploading(false);
-    }
+    setNewResource((prev) => ({ ...prev, file: e.target.files![0] }));
   };
 
-  // Add resource
+  // Add new resource (PDF or Link)
   const addResource = async () => {
     try {
-      const res = await fetch("/api/admin/resources", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newResource),
-      });
-      const data = await res.json();
-      if (res.ok && data.resource) {
-        setResources((prev) => [data.resource, ...prev]);
-        setShowAddModal(false);
-        setNewResource({ _id: "", title: "", type: "PDF", category: "", fileUrl: "", description: "" });
+      let payload;
+
+      if (newResource.type === "PDF") {
+        if (!newResource.file) {
+          alert("Please choose a PDF file.");
+          return;
+        }
+
+        payload = new FormData();
+        payload.append("file", newResource.file);
+        payload.append("title", newResource.title);
+        payload.append("type", newResource.type);
+        payload.append("category", newResource.category);
+        payload.append("description", newResource.description);
       } else {
-        console.error(data.message);
+        payload = {
+          title: newResource.title,
+          type: "Link",
+          category: newResource.category,
+          description: newResource.description,
+          fileUrl: newResource.link,
+        };
       }
-    } catch (error) {
-      console.error(error);
+
+      setUploading(true);
+
+      const res = await axiosInstance.post("/admin/resources", payload, {
+        headers:
+          newResource.type === "PDF"
+            ? { "Content-Type": "multipart/form-data" }
+            : { "Content-Type": "application/json" },
+      });
+
+      setResources((prev) => [res.data.resource, ...prev]);
+
+      // Reset form
+      setShowAddModal(false);
+      setNewResource({
+        title: "",
+        type: "PDF",
+        category: "",
+        file: null,
+        link: "",
+        description: "",
+      });
+    } catch (err) {
+      console.error("Failed to add resource", err);
+    } finally {
+      setUploading(false);
     }
   };
 
   // Delete resource
   const deleteResource = async (id: string) => {
     if (!confirm("Are you sure you want to delete this resource?")) return;
+
     try {
-      const res = await fetch(`/api/admin/resources/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setResources((prev) => prev.filter((r) => r._id !== id));
-      } else {
-        const data = await res.json();
-        console.error(data.message);
-      }
-    } catch (error) {
-      console.error(error);
+      await axiosInstance.delete(`/admin/resources/${id}`);
+      setResources((prev) => prev.filter((r) => r._id !== id));
+    } catch (err) {
+      console.error("Delete failed", err);
     }
   };
 
@@ -131,6 +150,7 @@ export default function AdminResourcesPage() {
               <th className="p-4 text-left">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {loading ? (
               <tr>
@@ -151,7 +171,13 @@ export default function AdminResourcesPage() {
                   <td className="p-4">{r.type}</td>
                   <td className="p-4">{r.category}</td>
                   <td className="p-4">
-                    <a href={r.fileUrl} target="_blank" className="text-blue-600 hover:underline">
+                    <a
+                      href={
+                        r.type === "PDF" ? `${r.fileUrl}` : r.fileUrl
+                      }
+                      target="_blank"
+                      className="text-blue-600 hover:underline"
+                    >
                       {r.type === "PDF" ? "Open PDF" : "Open Link"}
                     </a>
                   </td>
@@ -170,7 +196,7 @@ export default function AdminResourcesPage() {
         </table>
       </div>
 
-      {/* Add Resource Modal */}
+      {/* ADD RESOURCE MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 flex items-center justify-center p-6 bg-white/95 z-50">
           <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg space-y-4">
@@ -181,12 +207,19 @@ export default function AdminResourcesPage() {
               placeholder="Title"
               className="w-full border p-3 rounded-lg"
               value={newResource.title}
-              onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
+              onChange={(e) =>
+                setNewResource({ ...newResource, title: e.target.value })
+              }
             />
 
             <select
               value={newResource.type}
-              onChange={(e) => setNewResource({ ...newResource, type: e.target.value as "PDF" | "Link" })}
+              onChange={(e) =>
+                setNewResource({
+                  ...newResource,
+                  type: e.target.value as "PDF" | "Link",
+                })
+              }
               className="w-full border p-3 rounded-lg"
             >
               <option value="PDF">PDF</option>
@@ -195,31 +228,39 @@ export default function AdminResourcesPage() {
 
             <select
               value={newResource.category}
-              onChange={(e) => setNewResource({ ...newResource, category: e.target.value })}
+              onChange={(e) =>
+                setNewResource({ ...newResource, category: e.target.value })
+              }
               className="w-full border p-3 rounded-lg"
             >
               <option value="">Select Category</option>
               {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+                <option key={c}>{c}</option>
               ))}
             </select>
 
             {newResource.type === "PDF" && (
               <div>
-                <input type="file" accept="application/pdf" onChange={handleFileUpload} />
-                {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleFileSelect}
+                />
+                {uploading && (
+                  <p className="text-sm text-gray-500">Uploading...</p>
+                )}
               </div>
             )}
 
             {newResource.type === "Link" && (
               <input
                 type="text"
-                placeholder="Link URL"
+                placeholder="https://example.com"
                 className="w-full border p-3 rounded-lg"
-                value={newResource.fileUrl}
-                onChange={(e) => setNewResource({ ...newResource, fileUrl: e.target.value })}
+                value={newResource.link}
+                onChange={(e) =>
+                  setNewResource({ ...newResource, link: e.target.value })
+                }
               />
             )}
 
@@ -227,7 +268,12 @@ export default function AdminResourcesPage() {
               placeholder="Description (optional)"
               className="w-full border p-3 rounded-lg"
               value={newResource.description}
-              onChange={(e) => setNewResource({ ...newResource, description: e.target.value })}
+              onChange={(e) =>
+                setNewResource({
+                  ...newResource,
+                  description: e.target.value,
+                })
+              }
             />
 
             <div className="flex justify-end gap-3 pt-2">
@@ -239,8 +285,8 @@ export default function AdminResourcesPage() {
               </button>
               <button
                 onClick={addResource}
+                disabled={uploading}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                disabled={newResource.type === "PDF" && !newResource.fileUrl}
               >
                 Save Resource
               </button>

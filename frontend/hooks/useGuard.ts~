@@ -1,0 +1,60 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useMember } from "@/context/MemberContext";
+
+export const useGuard = (
+  step: "register" | "payment" | "profile" | "certificate"
+) => {
+  const router = useRouter();
+  const { member, hydrated } = useMember();
+
+  useEffect(() => {
+    if (!hydrated) return;
+
+    const memberId = localStorage.getItem("memberId");
+    const isRegistered = Boolean(memberId);
+    const isPaid = member?.paymentConfirmed ?? false;
+
+    // -------------------------------
+    // 1. Not registered → block everything except register
+    // -------------------------------
+    if (!isRegistered && step !== "register") {
+      router.replace("/Membership/register/standard");
+      return;
+    }
+
+    // -------------------------------
+    // 2. Register step: if registered, skip to profile
+    // -------------------------------
+    if (step === "register" && isRegistered) {
+      router.replace("/profile");
+      return;
+    }
+
+    // -------------------------------
+    // 3. Payment step: allow ONLY if not paid yet
+    // -------------------------------
+    if (step === "payment" && isPaid) {
+      router.replace("/profile");
+      return;
+    }
+
+    // -------------------------------
+    // 4. Profile step: must be registered (payment not required)
+    // -------------------------------
+    if (step === "profile" && !isRegistered) {
+      router.replace("/Membership/register/standard");
+      return;
+    }
+
+    // -------------------------------
+    // 5. Certificate: must be paid
+    // -------------------------------
+    if (step === "certificate" && !isPaid) {
+      router.replace("/profile");
+      return;
+    }
+  }, [hydrated, member, router, step]);
+};
